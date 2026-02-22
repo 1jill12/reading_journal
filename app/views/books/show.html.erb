@@ -1,0 +1,124 @@
+<div class="max-w-6xl mx-auto">
+  <!-- Back button -->
+  <div class="mb-6">
+    <%= link_to "← Back to Books", books_path, class: "text-gray-600 hover:text-gray-800" %>
+  </div>
+
+  <% if notice %>
+    <p class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6"><%= notice %></p>
+  <% end %>
+
+  <!-- Book Header -->
+  <div class="rounded-lg shadow-lg p-8 mb-8">
+    <div class="flex gap-8">
+      <!-- Book Cover -->
+      <div class="flex-shrink-0">
+        <% if @book.cover_url.present? %>
+          <%= image_tag @book.cover_url, class: "w-48 h-72 object-cover rounded-lg shadow-md", alt: @book.title %>
+        <% else %>
+          <div class="w-48 h-72 bg-gray-200 rounded-lg flex items-center justify-center">
+            <span class="text-gray-400">No cover</span>
+          </div>
+        <% end %>
+      </div>
+
+      <!-- Book Details -->
+      <div class="flex-1">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2"><%= @book.title %></h1>
+        <p class="text-xl text-gray-600 mb-4">by <%= @book.author %></p>
+
+        <div class="flex gap-4 mb-6">
+          <span class="px-4 py-2 rounded-full text-sm font-medium <%= @book.status == 'Finished' ? 'bg-green-100 text-green-800' : @book.status == 'Currently Reading' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' %>">
+            <%= @book.status %>
+          </span>
+          <span class="text-gray-600"><%= @book.pages %> pages</span>
+        </div>
+
+        <!-- Rating -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-2">My Rating</h3>
+          <div class="flex gap-1" id="star-rating">
+            <% (1..5).each do |star| %>
+              <%= button_to book_path(@book, book: { rating: star }), method: :patch, class: "star-button text-3xl transition", style: "background: none; border: none; padding: 0; cursor: pointer;", data: { star: star } do %>
+                <span class="star <%= @book.rating && @book.rating >= star ? 'text-yellow-500' : 'text-gray-300' %>">★</span>
+              <% end %>
+            <% end %>
+          </div>
+          <% if @book.rating %>
+            <p class="text-sm text-gray-500 mt-1"><%= @book.rating %> out of 5 stars</p>
+          <% end %>
+        </div>
+
+        <script>
+          document.addEventListener('turbo:load', function() {
+            const starButtons = document.querySelectorAll('.star-button');
+
+            starButtons.forEach((button, index) => {
+              button.addEventListener('mouseenter', function() {
+                starButtons.forEach((btn, i) => {
+                  const star = btn.querySelector('.star');
+                  if (i <= index) {
+                    star.classList.add('text-yellow-400');
+                    star.classList.add('drop-shadow-lg');
+                    star.classList.remove('text-gray-300');
+                  } else {
+                    star.classList.remove('text-yellow-400');
+                    star.classList.remove('drop-shadow-lg');
+                  }
+                });
+              });
+            });
+
+            const container = document.getElementById('star-rating');
+            container.addEventListener('mouseleave', function() {
+              starButtons.forEach((btn) => {
+                const star = btn.querySelector('.star');
+                star.classList.remove('text-yellow-400');
+                star.classList.remove('drop-shadow-lg');
+              });
+            });
+          });
+        </script>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4">
+          <%= link_to "Edit Book", edit_book_path(@book), class: "px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition" %>
+          <%= button_to "Delete Book", @book, method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reflections Section -->
+  <div class="rounded-lg shadow-lg p-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">My Reflections</h2>
+
+    <!-- Add New Reflection Form -->
+    <div class="mb-8 bg-pink-50 p-6 rounded-lg">
+      <%= form_with(model: [@book, @book.reflections.build], local: true) do |form| %>
+        <div class="mb-4">
+          <%= form.label :content, "Add a new reflection", class: "block text-sm font-medium text-gray-700 mb-2" %>
+          <%= form.text_area :content, rows: 4, placeholder: "What are your thoughts about this book?", class: "w-full px-4 py-2 border border-gray-300 bg-transparent rounded-lg outline-none focus:ring-2 focus:ring-[#7F6921] focus:border-transparent" %>
+        </div>
+        <%= form.submit "Add Reflection", class: "w-full text-white font-medium py-3 px-6 rounded-lg cursor-pointer transition duration-200 hover:opacity-70", style: "background-color: #132440;" %>
+      <% end %>
+    </div>
+
+    <!-- Reflections List -->
+    <div class="space-y-4">
+      <% if @book.reflections.any? %>
+        <% @book.reflections.order(created_at: :desc).each do |reflection| %>
+          <div class="border border-pink-50 rounded-lg p-4 hover:shadow-md transition">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-sm text-gray-500"><%= reflection.created_at.strftime("%B %d, %Y at %I:%M %p") %></span>
+              <%= button_to "Delete", book_reflection_path(@book, reflection), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "text-red-600 hover:text-red-800 text-sm" %>
+            </div>
+            <p class="text-gray-800"><%= reflection.content %></p>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-gray-500 text-center py-8">No reflections yet. Add your first one above!</p>
+      <% end %>
+    </div>
+  </div>
+</div>
