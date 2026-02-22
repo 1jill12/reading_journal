@@ -1,9 +1,11 @@
 class Book < ApplicationRecord
   STATUSES = ['Want to Read', 'Currently Reading', 'Finished', 'DNF']
-  
+
   has_many :reflections, dependent: :destroy
 
   after_create :fetch_cover_from_google_books
+
+  belongs_to :user, optional: true
 
   private
 
