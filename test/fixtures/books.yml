@@ -1,13 +1,15 @@
-# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
-
 one:
-  title: MyString
-  author: MyString
-  pages: 1
-  status: MyString
+  title: A Court of Thorns and Roses
+  author: Sarah J Maas
+  pages: 419
+  status: Finished
+  user: one
+  spice_rating: 3
+  rating: 5
 
 two:
-  title: MyString
-  author: MyString
-  pages: 1
-  status: MyString
+  title: Fourth Wing
+  author: Rebecca Yarros
+  pages: 528
+  status: Want to Read
+  user: one
