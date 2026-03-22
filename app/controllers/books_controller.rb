@@ -6,17 +6,32 @@ class BooksController < ApplicationController
     @books = current_user.books
   end
 
+  # GET /books/search
+  def search
+    @query   = params[:q].to_s.strip
+    @results = @query.present? ? GoogleBooksService.search(@query) : []
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @results }
+    end
+  end
+
   # GET /books/1 or /books/1.json
   def show
+    @review = @book.reviews.find_or_initialize_by(user: current_user)
+    @tropes = Trope.alphabetical
   end
 
   # GET /books/new
   def new
     @book = current_user.books.new
+    @tropes = Trope.alphabetical
   end
 
   # GET /books/1/edit
   def edit
+    @tropes = Trope.alphabetical
   end
 
   # POST /books or /books.json
@@ -65,6 +80,6 @@ class BooksController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def book_params
-      params.expect(book: [ :title, :author, :pages, :status, :cover_url, :rating ])
+      params.expect(book: [ :title, :author, :genre, :format, :pages, :status, :cover_url, :rating, :spice_rating, :sadness_rating, :humor_rating, :suspense_rating, :description, :started_at, :finished_at, trope_ids: [] ])
     end
 end
