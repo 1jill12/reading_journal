@@ -1,0 +1,83 @@
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold theme-text mb-2">Find a Book</h1>
+    <p class="theme-text-secondary">Search and add directly to your shelf.</p>
+  </div>
+
+  <%# Search form %>
+  <%= form_with url: search_books_path, method: :get, data: { turbo_frame: "search_results" } do |f| %>
+    <div class="flex gap-3 mb-8">
+      <%= f.text_field :q, value: @query,
+          placeholder: "Search by title, author, or ISBN…",
+          autofocus: true,
+          class: "flex-1 px-4 py-3 rounded-lg border outline-none focus:ring-2 text-base",
+          style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+      <%= f.submit "Search",
+          class: "px-6 py-3 rounded-lg font-medium cursor-pointer transition hover:opacity-80",
+          style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+    </div>
+  <% end %>
+
+  <%= turbo_frame_tag "search_results" do %>
+    <% if @query.present? && @results.empty? %>
+      <div class="text-center py-16">
+        <p class="text-4xl mb-4">📚</p>
+        <p class="theme-text-secondary">No results found for "<%= @query %>".</p>
+        <p class="theme-text-muted text-sm mt-2">Try a different title or author name.</p>
+      </div>
+
+    <% elsif @results.any? %>
+      <p class="theme-text-muted text-sm mb-4"><%= @results.count %> results for "<%= @query %>"</p>
+
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        <% @results.each do |book| %>
+          <div class="group relative">
+            <%# Cover %>
+            <div class="relative mb-3">
+              <% if book[:cover_url].present? %>
+                <%= image_tag book[:cover_url],
+                    class: "w-full h-56 object-cover rounded-lg shadow-md",
+                    alt: book[:title] %>
+              <% else %>
+                <div class="w-full h-56 rounded-lg shadow-md flex items-center justify-center p-3 text-center"
+                     style="background-color: var(--theme-bg-card); border: 1px solid var(--theme-border);">
+                  <span class="theme-text-muted text-xs"><%= book[:title] %></span>
+                </div>
+              <% end %>
+
+              <%# Hover overlay with shelf picker %>
+              <div class="absolute inset-0 rounded-lg flex flex-col items-center justify-center gap-2 p-3
+                          opacity-0 group-hover:opacity-100 transition duration-200"
+                   style="background-color: rgba(0,0,0,0.82);">
+                <p class="text-white text-xs font-semibold text-center leading-tight mb-1">Add to shelf:</p>
+                <% Book::STATUSES.reject { |s| s == 'DNF' }.each do |status| %>
+                  <%= form_with url: books_path, method: :post do |f| %>
+                    <%= hidden_field_tag "book[title]",       book[:title] %>
+                    <%= hidden_field_tag "book[author]",      book[:author] %>
+                    <%= hidden_field_tag "book[pages]",       book[:pages] %>
+                    <%= hidden_field_tag "book[cover_url]",   book[:cover_url] %>
+                    <%= hidden_field_tag "book[description]", book[:description] %>
+                    <%= hidden_field_tag "book[status]",      status %>
+                    <%= submit_tag status,
+                        class: "w-full text-xs py-1.5 px-3 rounded-md font-medium cursor-pointer transition hover:opacity-90",
+                        style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+
+            <%# Title + author below cover %>
+            <p class="text-sm font-medium theme-text leading-tight truncate"><%= book[:title] %></p>
+            <p class="text-xs theme-text-muted truncate mt-0.5"><%= book[:author] %></p>
+          </div>
+        <% end %>
+      </div>
+
+    <% elsif @query.blank? %>
+      <div class="text-center py-16">
+        <p class="text-5xl mb-4">🔍</p>
+        <p class="theme-text-secondary">Search for any book to add it to your library.</p>
+      </div>
+    <% end %>
+  <% end %>
+</div>

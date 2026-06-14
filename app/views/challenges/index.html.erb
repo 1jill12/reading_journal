@@ -1,0 +1,26 @@
+<div class="max-w-4xl mx-auto">
+  <div class="mb-8">
+    <h1 class="text-4xl font-bold theme-text">Challenges</h1>
+    <p class="theme-text-muted mt-2">Pick a challenge and track your reading progress.</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+    <%# Trope Bingo %>
+    <%= link_to bingo_cards_path, class: "group theme-bg-card rounded-2xl border theme-border shadow-lg p-8 hover:shadow-xl transition hover:opacity-90 block" do %>
+      <div class="text-5xl mb-4">🎯</div>
+      <h2 class="text-xl font-bold theme-text mb-2">Trope Bingo</h2>
+      <p class="theme-text-secondary text-sm">Fill your bingo card by reading books that match popular tropes. Get a bingo to complete a line!</p>
+      <span class="inline-block mt-4 text-sm font-medium" style="color: var(--theme-accent);">View cards →</span>
+    <% end %>
+
+    <%# A–Z Challenge %>
+    <%= link_to az_challenges_path, class: "group theme-bg-card rounded-2xl border theme-border shadow-lg p-8 hover:shadow-xl transition hover:opacity-90 block" do %>
+      <div class="text-5xl mb-4">🔤</div>
+      <h2 class="text-xl font-bold theme-text mb-2">A–Z Challenge</h2>
+      <p class="theme-text-secondary text-sm">Read a book for every letter of the alphabet. Assign books to each letter and work your way from A to Z!</p>
+      <span class="inline-block mt-4 text-sm font-medium" style="color: var(--theme-accent);">View challenge →</span>
+    <% end %>
+
+  </div>
+</div>

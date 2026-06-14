@@ -1,0 +1,61 @@
+<%# locals: (goal:) %>
+<div class="theme-bg-card rounded-xl p-5 border theme-border">
+  <div class="flex items-start justify-between mb-3">
+    <div class="flex-1 min-w-0 pr-3">
+      <span class="text-xs font-medium px-2 py-0.5 rounded-full mb-2 inline-block"
+            style="background-color: var(--theme-border); color: var(--theme-text-secondary);">
+        <%= ReadingGoal::TYPES[goal.goal_type] %>
+      </span>
+      <h3 class="text-sm font-bold theme-text leading-snug"><%= goal.display_title %></h3>
+    </div>
+
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <% if goal.completed? %>
+        <span class="text-lg">🎉</span>
+      <% end %>
+      <%= button_to reading_goal_path(goal), method: :delete,
+          data: { turbo_confirm: "Remove this goal?" },
+          class: "text-xs theme-text-muted hover:opacity-70 transition cursor-pointer",
+          style: "background: none; border: none; padding: 0;" do %>
+        ✕
+      <% end %>
+    </div>
+  </div>
+
+  <%# Progress bar %>
+  <% pct = goal.percentage %>
+  <div class="w-full rounded-full h-3 mb-2" style="background-color: var(--theme-border);">
+    <div class="h-3 rounded-full transition-all duration-500 <%= goal.completed? ? 'animate-pulse' : '' %>"
+         style="width: <%= pct %>%; background-color: <%= goal.completed? ? 'var(--theme-stat-finished)' : 'var(--theme-accent)' %>;"></div>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <span class="text-xs theme-text-secondary"><%= goal.display_progress %></span>
+    <span class="text-xs font-bold <%= goal.completed? ? 'theme-stat-finished' : 'theme-text-muted' %>"><%= pct %>%</span>
+  </div>
+
+  <%# Custom goal — manual increment buttons %>
+  <% if goal.goal_type == 'custom' && !goal.completed? %>
+    <div class="flex items-center gap-2 mt-3 pt-3 border-t theme-border">
+      <%= button_to reading_goal_path(goal), method: :patch,
+          params: { increment: -1 },
+          class: "w-8 h-8 rounded-full text-sm font-bold cursor-pointer transition hover:opacity-70 flex-shrink-0",
+          style: "background-color: var(--theme-border); color: var(--theme-text-primary); border: none;" do %>−<% end %>
+      <div class="flex-1 text-center text-sm font-semibold theme-text"><%= goal.current_progress %></div>
+      <%= button_to reading_goal_path(goal), method: :patch,
+          params: { increment: 1 },
+          class: "w-8 h-8 rounded-full text-sm font-bold cursor-pointer transition hover:opacity-70 flex-shrink-0",
+          style: "background-color: var(--theme-accent); color: var(--theme-accent-text); border: none;" do %>+<% end %>
+    </div>
+  <% end %>
+
+  <%# Abandon button for active goals %>
+  <% if !goal.completed? && !goal.abandoned? %>
+    <%= button_to reading_goal_path(goal), method: :patch,
+        params: { status: 'abandoned' },
+        class: "mt-3 text-xs theme-text-muted hover:opacity-70 transition cursor-pointer",
+        style: "background: none; border: none; padding: 0;" do %>
+      Abandon goal
+    <% end %>
+  <% end %>
+</div>

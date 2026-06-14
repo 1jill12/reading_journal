@@ -1,0 +1,58 @@
+<div class="max-w-2xl mx-auto">
+  <h1 class="text-3xl font-bold theme-text mb-6">Find People</h1>
+
+  <%= form_with url: users_path, method: :get do |f| %>
+    <div class="flex gap-3 mb-8">
+      <%= f.text_field :q, value: @query, placeholder: "Search by username or email…",
+          autofocus: true,
+          class: "flex-1 px-4 py-3 rounded-lg border outline-none focus:ring-2 text-base",
+          style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+      <%= f.submit "Search",
+          class: "px-6 py-3 rounded-lg font-medium cursor-pointer transition hover:opacity-80",
+          style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+    </div>
+  <% end %>
+
+  <% if @query.present? && @users.empty? %>
+    <p class="theme-text-secondary text-center py-8">No readers found for "<%= @query %>".</p>
+  <% elsif @users.any? %>
+    <div class="space-y-3">
+      <% @users.each do |user| %>
+        <div class="theme-bg-card rounded-xl p-4 border theme-border flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold flex-shrink-0"
+                 style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+              <%= user.display_name.first.upcase %>
+            </div>
+            <div>
+              <%= link_to user_path(user), class: "font-semibold theme-text hover:opacity-70 transition" do %>
+                <%= user.display_name %>
+              <% end %>
+              <p class="text-xs theme-text-muted">
+                <%= user.books.where(status: 'Finished').count %> books finished
+                · <%= user.followers.count %> followers
+              </p>
+            </div>
+          </div>
+
+          <% if current_user.following?(user) %>
+            <%= button_to "Unfollow", follow_path(user.id), method: :delete,
+                params: { following_id: user.id },
+                class: "text-sm px-4 py-1.5 rounded-lg border theme-border theme-text transition hover:opacity-70",
+                style: "background: transparent;" %>
+          <% else %>
+            <%= button_to "Follow", follows_path, method: :post,
+                params: { following_id: user.id },
+                class: "text-sm px-4 py-1.5 rounded-lg font-medium transition hover:opacity-80",
+                style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% elsif @query.blank? %>
+    <div class="text-center py-16">
+      <p class="text-4xl mb-4">🔍</p>
+      <p class="theme-text-secondary">Search for other readers by username or email.</p>
+    </div>
+  <% end %>
+</div>

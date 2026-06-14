@@ -1,0 +1,61 @@
+<%# locals: (activity:) %>
+<% trackable = activity.trackable %>
+<% return unless trackable %>
+
+<div class="flex gap-4 py-4 border-b theme-border last:border-0">
+  <%# Avatar %>
+  <%= link_to user_path(activity.user), class: "flex-shrink-0" do %>
+    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold"
+         style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+      <%= activity.user.display_name.first.upcase %>
+    </div>
+  <% end %>
+
+  <div class="flex-1 min-w-0">
+    <%# Action line %>
+    <p class="text-sm theme-text leading-snug">
+      <%= link_to activity.user.display_name, user_path(activity.user), class: "font-semibold theme-accent-color hover:opacity-70" %>
+
+      <% case activity.action_type %>
+      <% when 'book_added' %>
+        added
+        <% book = trackable %>
+        <%= link_to "\"#{book.title}\"", book_path(book), class: "font-medium theme-text hover:opacity-70" %>
+        to their <span class="theme-text-secondary"><%= book.status %></span> shelf
+
+      <% when 'book_finished' %>
+        finished
+        <% book = trackable %>
+        <%= link_to "\"#{book.title}\"", book_path(book), class: "font-medium theme-text hover:opacity-70" %>
+        <% if book.rating %>
+          and rated it <span class="theme-star"><%= '★' * book.rating %></span>
+        <% end %>
+
+      <% when 'reflection_written' %>
+        <% book = trackable.book %>
+        wrote a reflection on
+        <%= link_to "\"#{book.title}\"", book_path(book), class: "font-medium theme-text hover:opacity-70" %>
+
+      <% when 'bingo_covered' %>
+        covered <span class="font-medium theme-accent-color"><%= trackable.bingo_square.trope_name %></span> on their bingo card
+        <% if trackable.book %>
+          with <%= link_to "\"#{trackable.book.title}\"", book_path(trackable.book), class: "font-medium theme-text hover:opacity-70" %>
+        <% end %>
+      <% end %>
+    </p>
+
+    <p class="text-xs theme-text-muted mt-1"><%= time_ago_in_words(activity.created_at) %> ago</p>
+  </div>
+
+  <%# Book cover thumbnail on the right %>
+  <% book = case activity.action_type
+             when 'book_added', 'book_finished' then trackable
+             when 'reflection_written'          then trackable.book
+             when 'bingo_covered'               then trackable.book
+             end %>
+  <% if book&.cover_url.present? %>
+    <%= link_to book_path(book) do %>
+      <%= image_tag book.cover_url, class: "w-10 h-14 object-cover rounded shadow-sm flex-shrink-0", alt: book.title %>
+    <% end %>
+  <% end %>
+</div>

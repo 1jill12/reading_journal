@@ -1,0 +1,147 @@
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-4xl font-bold theme-text">Reading Goals</h1>
+  </div>
+
+  <% if notice %>
+    <p class="rounded-lg px-4 py-3 mb-6 text-sm border theme-border theme-text-secondary"
+       style="background-color: var(--theme-bg-card);"><%= notice %></p>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <%# Left: New goal form %>
+    <div class="md:col-span-1">
+      <div class="theme-bg-card rounded-xl shadow-lg p-6 border theme-border sticky top-28">
+        <h2 class="text-lg font-bold theme-text mb-5">Add a Goal</h2>
+
+        <%= form_with model: @new_goal, url: reading_goals_path do |f| %>
+          <% if @new_goal.errors.any? %>
+            <div class="rounded-lg px-3 py-2 mb-4 text-xs border theme-border"
+                 style="background-color: var(--theme-bg); color: var(--theme-stat-finished);">
+              <% @new_goal.errors.full_messages.each do |msg| %>
+                <p><%= msg %></p>
+              <% end %>
+            </div>
+          <% end %>
+
+          <div class="mb-4">
+            <%= f.label :goal_type, "Goal Type", class: "block text-xs font-medium theme-text-secondary mb-1" %>
+            <%= f.select :goal_type,
+                ReadingGoal::TYPES.map { |k, v| [v, k] },
+                { prompt: 'Select…' },
+                class: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+                style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);",
+                id: "goal_type_select" %>
+          </div>
+
+          <%# Custom title — shown for custom type %>
+          <div class="mb-4" id="title_field" style="display:none;">
+            <%= f.label :title, "Goal Description", class: "block text-xs font-medium theme-text-secondary mb-1" %>
+            <%= f.text_field :title, placeholder: "e.g. Read 3 fantasy series",
+                class: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+                style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+          </div>
+
+          <div class="mb-4">
+            <%= f.label :target, "Target", class: "block text-xs font-medium theme-text-secondary mb-1" %>
+            <%= f.number_field :target, min: 1, placeholder: "e.g. 24",
+                class: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+                style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+          </div>
+
+          <div class="mb-4" id="year_field">
+            <%= f.label :year, "Year", class: "block text-xs font-medium theme-text-secondary mb-1" %>
+            <%= f.select :year,
+                ((Date.current.year - 1)..(Date.current.year + 2)).to_a.reverse,
+                { selected: Date.current.year },
+                class: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+                style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+          </div>
+
+          <div class="mb-5" id="month_field" style="display:none;">
+            <%= f.label :month, "Month", class: "block text-xs font-medium theme-text-secondary mb-1" %>
+            <%= f.select :month,
+                (1..12).map { |m| [Date::MONTHNAMES[m], m] },
+                { selected: Date.current.month },
+                class: "w-full px-3 py-2 rounded-lg text-sm border outline-none",
+                style: "background-color: var(--theme-input-bg); border-color: var(--theme-input-border); color: var(--theme-text-primary);" %>
+          </div>
+
+          <%= f.submit "Add Goal",
+              class: "w-full py-2 px-4 rounded-lg text-sm font-medium cursor-pointer transition hover:opacity-80",
+              style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Right: Goals list %>
+    <div class="md:col-span-2 space-y-8">
+
+      <%# Active goals %>
+      <div>
+        <h2 class="text-lg font-bold theme-text mb-4">
+          Active Goals
+          <span class="text-sm font-normal theme-text-muted ml-2"><%= @active_goals.count %></span>
+        </h2>
+        <% if @active_goals.any? %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% @active_goals.each do |goal| %>
+              <%= render "goal_card", goal: goal %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="theme-bg-card rounded-xl p-8 border theme-border text-center">
+            <p class="text-3xl mb-3">🎯</p>
+            <p class="theme-text-secondary text-sm">No active goals yet. Add one to get started!</p>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Completed goals %>
+      <% if @completed_goals.any? %>
+        <div>
+          <h2 class="text-lg font-bold theme-text mb-4">
+            Completed 🎉
+            <span class="text-sm font-normal theme-text-muted ml-2"><%= @completed_goals.count %></span>
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <% @completed_goals.each do |goal| %>
+              <%= render "goal_card", goal: goal %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Abandoned goals %>
+      <% if @abandoned_goals.any? %>
+        <div>
+          <h2 class="text-base font-semibold theme-text-muted mb-3">Abandoned</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 opacity-50">
+            <% @abandoned_goals.each do |goal| %>
+              <%= render "goal_card", goal: goal %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const typeSelect  = document.getElementById('goal_type_select');
+  const titleField  = document.getElementById('title_field');
+  const yearField   = document.getElementById('year_field');
+  const monthField  = document.getElementById('month_field');
+
+  function updateFields() {
+    const type = typeSelect.value;
+    titleField.style.display  = type === 'custom'          ? 'block' : 'none';
+    yearField.style.display   = type === 'custom'          ? 'none'  : 'block';
+    monthField.style.display  = type === 'books_per_month' ? 'block' : 'none';
+  }
+
+  typeSelect.addEventListener('change', updateFields);
+  updateFields();
+</script>

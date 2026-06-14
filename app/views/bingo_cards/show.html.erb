@@ -1,0 +1,98 @@
+<div class="max-w-3xl mx-auto">
+  <div class="mb-6 flex items-center justify-between">
+    <div class="flex flex-col gap-1">
+      <%= link_to "← Challenges", challenges_path, class: "text-xs theme-text-muted hover:opacity-70 transition" %>
+      <%= link_to "← All Cards", bingo_cards_path, class: "text-sm theme-text-muted hover:opacity-70 transition" %>
+    </div>
+    <% if @user_bingo_card.bingo? %>
+      <span class="text-2xl font-black tracking-widest px-4 py-1 rounded-full animate-pulse"
+            style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+        🎉 BINGO!
+      </span>
+    <% end %>
+  </div>
+
+  <% if notice %>
+    <p class="rounded-lg px-4 py-3 mb-4 text-sm border theme-border theme-text-secondary"
+       style="background-color: var(--theme-bg-card);">
+      <%= notice %>
+    </p>
+  <% end %>
+
+  <div class="theme-bg-card rounded-xl shadow-lg p-6 border theme-border mb-6">
+    <h1 class="text-3xl font-bold theme-text mb-1"><%= @bingo_card.title %></h1>
+    <p class="theme-text-secondary text-sm mb-6"><%= @bingo_card.description %></p>
+
+    <%# Progress bar %>
+    <% squares = @bingo_card.bingo_squares %>
+    <% covered = @user_bingo_card.covered_positions %>
+    <% total = squares.count %>
+    <% covered_count = squares.select { |s| covered.include?(s.position) }.count %>
+    <div class="flex items-center gap-3 mb-6">
+      <div class="flex-1 rounded-full h-2" style="background-color: var(--theme-border);">
+        <div class="theme-progress-bar h-2 rounded-full transition-all duration-500"
+             style="width: <%= (covered_count.to_f / total * 100).round %>%"></div>
+      </div>
+      <span class="text-sm theme-text-muted whitespace-nowrap">
+        <%= covered_count %> / <%= total %> squares
+      </span>
+    </div>
+
+    <%# 5x5 Bingo Grid %>
+    <% completed_lines = @user_bingo_card.completed_lines.flatten.to_set %>
+
+    <%# Column headers %>
+    <div class="grid grid-cols-5 gap-2 mb-2">
+      <% ['B','I','N','G','O'].each do |letter| %>
+        <div class="text-center text-xl font-black theme-accent-color"><%= letter %></div>
+      <% end %>
+    </div>
+
+    <div class="grid grid-cols-5 gap-2">
+      <% squares.each do |square| %>
+        <% is_covered = covered.include?(square.position) %>
+        <% is_in_bingo_line = completed_lines.include?(square.position) %>
+        <% covered_square = @user_bingo_card.user_bingo_squares.find { |ubs| ubs.bingo_square_id == square.id } %>
+
+        <div class="aspect-square rounded-lg flex flex-col items-center justify-center text-center p-2 relative group transition-all duration-200 border"
+             style="
+               background-color: <%= is_in_bingo_line ? 'var(--theme-accent)' : is_covered ? 'color-mix(in srgb, var(--theme-accent) 25%, var(--theme-bg-card))' : 'var(--theme-bg)' %>;
+               border-color: <%= is_covered ? 'var(--theme-accent)' : 'var(--theme-border)' %>;
+               color: <%= is_in_bingo_line ? 'var(--theme-accent-text)' : 'var(--theme-text-primary)' %>;
+             ">
+
+          <% if square.free_space? %>
+            <span class="text-2xl">★</span>
+            <span class="text-xs font-semibold mt-1">FREE</span>
+          <% elsif is_covered && covered_square&.book&.cover_url.present? %>
+            <%# Show book cover — trope + title on hover %>
+            <%= image_tag covered_square.book.cover_url,
+                class: "absolute inset-0 w-full h-full object-cover rounded-lg",
+                alt: covered_square.book.title %>
+            <div class="absolute inset-0 rounded-lg flex flex-col items-center justify-center p-1 opacity-0 group-hover:opacity-100 transition duration-200 text-center"
+                 style="background-color: rgba(0,0,0,0.75);">
+              <span class="text-white text-xs font-semibold leading-tight mb-1"><%= square.trope_name %></span>
+              <span class="text-gray-300" style="font-size: 0.6rem; line-height: 1.2;"><%= covered_square.book.title %></span>
+            </div>
+          <% else %>
+            <%# Uncovered or covered with no art — show trope name %>
+            <span class="text-xs font-medium leading-tight"><%= square.trope_name %></span>
+            <% if is_covered %>
+              <span class="text-base mt-1">✓</span>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Legend %>
+  <div class="theme-bg-card rounded-xl p-4 border theme-border text-sm">
+    <p class="theme-text-muted mb-2 font-medium">How it works:</p>
+    <ul class="space-y-1 theme-text-secondary">
+      <li>• Tag tropes on any book — matching squares auto-cover</li>
+      <li>• Hover a covered square to see which book filled it</li>
+      <li>• Complete a row, column, or diagonal to get BINGO!</li>
+    </ul>
+  </div>
+</div>

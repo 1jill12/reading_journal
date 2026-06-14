@@ -1,0 +1,88 @@
+<div class="max-w-3xl mx-auto">
+  <% if @private %>
+    <div class="theme-bg-card rounded-xl p-10 border theme-border text-center">
+      <p class="text-4xl mb-4">🔒</p>
+      <p class="text-xl font-bold theme-text mb-2"><%= @user.display_name %></p>
+      <p class="theme-text-secondary mb-4">This account is private. Follow them to see their books and activity.</p>
+      <%= button_to "Follow", follows_path, method: :post,
+          params: { following_id: @user.id },
+          class: "px-6 py-2 rounded-lg text-sm font-medium transition hover:opacity-80",
+          style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+    </div>
+  <% else %>
+  <%# Profile header %>
+  <div class="theme-bg-card rounded-xl shadow-lg p-8 border theme-border mb-6">
+    <div class="flex items-center gap-6">
+      <div class="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-black flex-shrink-0"
+           style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+        <%= @user.display_name.first.upcase %>
+      </div>
+      <div class="flex-1">
+        <h1 class="text-2xl font-bold theme-text"><%= @user.display_name %></h1>
+        <% if @user.username.present? %>
+          <p class="theme-text-muted text-sm">@<%= @user.username %></p>
+        <% end %>
+
+        <div class="flex gap-6 mt-3 text-sm">
+          <span class="theme-text"><span class="font-bold"><%= @finished %></span> <span class="theme-text-muted">finished</span></span>
+          <span class="theme-text"><span class="font-bold"><%= @user.followers.count %></span> <span class="theme-text-muted">followers</span></span>
+          <span class="theme-text"><span class="font-bold"><%= @user.following.count %></span> <span class="theme-text-muted">following</span></span>
+        </div>
+      </div>
+
+      <% unless @user == current_user %>
+        <% if current_user.following?(@user) %>
+          <%= button_to "Unfollow", follow_path(@user.id), method: :delete,
+              params: { following_id: @user.id },
+              class: "px-5 py-2 rounded-lg border theme-border theme-text text-sm font-medium transition hover:opacity-70",
+              style: "background: transparent;" %>
+        <% else %>
+          <%= button_to "Follow", follows_path, method: :post,
+              params: { following_id: @user.id },
+              class: "px-5 py-2 rounded-lg text-sm font-medium transition hover:opacity-80",
+              style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+    <%# Recently read books %>
+    <div class="md:col-span-3">
+      <h2 class="text-lg font-bold theme-text mb-4">Recently Read</h2>
+      <% if @books.any? %>
+        <div class="grid grid-cols-4 gap-3">
+          <% @books.first(8).each do |book| %>
+            <%= link_to book_path(book), class: "block group" do %>
+              <% if book.cover_url.present? %>
+                <%= image_tag book.cover_url, class: "w-full h-24 object-cover rounded-lg shadow group-hover:shadow-md transition", alt: book.title %>
+              <% else %>
+                <div class="w-full h-24 rounded-lg flex items-center justify-center p-1"
+                     style="background-color: var(--theme-border);">
+                  <span class="theme-text-muted text-xs text-center leading-tight"><%= book.title.truncate(30) %></span>
+                </div>
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="theme-text-muted text-sm">No books yet.</p>
+      <% end %>
+    </div>
+
+    <%# Activity feed %>
+    <div class="md:col-span-2">
+      <h2 class="text-lg font-bold theme-text mb-4">Activity</h2>
+      <div class="theme-bg-card rounded-xl border theme-border px-4">
+        <% if @activities.any? %>
+          <% @activities.first(10).each do |activity| %>
+            <%= render "shared/activity_card", activity: activity %>
+          <% end %>
+        <% else %>
+          <p class="theme-text-muted text-sm py-6 text-center">No activity yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+  <% end %>
+</div>

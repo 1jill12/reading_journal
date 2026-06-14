@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="<%= user_signed_in? ? current_user.theme : 'neutral' %>">
   <head>
     <title><%= content_for(:title) || "Reading Journal" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -11,28 +11,122 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+    <%= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
-  <body style="background-color:rgb(245, 242, 242);">
-    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('<%= asset_path('one_more_chapter.png') %>'); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0.2; z-index: -1"></div>
+  <body class="theme-bg theme-text min-h-screen transition-colors duration-300">
+
+    <%# Background overlay image — changes per theme %>
+    <% bg_image = 'one_more_chapter.png' %>
+    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background-image: url('<%= asset_path(bg_image) %>');
+                background-size: cover; background-position: center;
+                background-repeat: no-repeat;
+                opacity: var(--theme-overlay-opacity);
+                z-index: -1; pointer-events: none;"></div>
+
     <% if user_signed_in? %>
-      <nav class="fixed top-0 right-0 p-4 z-10">
-        <%= button_to "Logout", destroy_user_session_path, method: :delete, class: "px-4 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition", data: { turbo: false } %>
+      <nav class="theme-bg-nav fixed top-0 left-0 right-0 z-10"
+           style="box-shadow: 0 2px 12px var(--theme-nav-shadow);">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+
+          <%# Left: nav links %>
+          <div class="flex items-center gap-6">
+            <%= link_to "Dashboard",   root_path,          class: "theme-text font-medium hover:opacity-70 transition" %>
+            <%= link_to "My Books",    books_path,         class: "theme-text font-medium hover:opacity-70 transition" %>
+            <%= link_to "Challenges",  challenges_path,    class: "theme-text font-medium hover:opacity-70 transition" %>
+            <%= link_to "Feed",        feed_path,          class: "theme-text font-medium hover:opacity-70 transition" %>
+          </div>
+
+          <%# Right: toggle + user dropdown %>
+          <div class="flex items-center gap-2">
+          <%= button_to theme_path, method: :patch,
+              class: "w-9 h-9 rounded-full flex items-center justify-center border transition hover:opacity-70 cursor-pointer text-base",
+              style: "background-color: var(--theme-bg-card); border-color: var(--theme-border);",
+              title: current_user.theme == 'dark_academia' ? 'Switch to light mode' : 'Switch to dark mode',
+              data: { turbo: false } do %>
+            <%= current_user.theme == 'dark_academia' ? '☀️' : '🌙' %>
+          <% end %>
+
+          <div class="relative" id="user-menu">
+            <button onclick="document.getElementById('user-dropdown').classList.toggle('hidden')"
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border transition hover:opacity-80 cursor-pointer text-sm font-medium theme-text"
+                    style="border-color: var(--theme-border); background-color: var(--theme-bg-card);">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                   style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+                <%= current_user.display_name.first.upcase %>
+              </div>
+              <%= current_user.display_name %>
+              <span class="theme-text-muted text-xs">▾</span>
+            </button>
+
+            <div id="user-dropdown" class="hidden absolute right-0 mt-2 w-48 rounded-xl shadow-xl z-50 border theme-border overflow-hidden"
+                 style="background-color: var(--theme-nav-bg);">
+              <div class="px-4 py-3 border-b theme-border">
+                <p class="text-xs theme-text-muted">Signed in as</p>
+                <p class="text-sm font-semibold theme-text truncate"><%= current_user.email %></p>
+              </div>
+              <%= link_to stats_path, class: "flex items-center gap-2 px-4 py-3 text-sm theme-text hover:opacity-70 transition" do %>
+                📊 Stats
+              <% end %>
+              <%= link_to reading_goals_path, class: "flex items-center gap-2 px-4 py-3 text-sm theme-text hover:opacity-70 transition" do %>
+                🎯 Goals
+              <% end %>
+              <%= link_to settings_path, class: "flex items-center gap-2 px-4 py-3 text-sm theme-text hover:opacity-70 transition" do %>
+                ⚙️ Settings
+              <% end %>
+              <div class="border-t theme-border">
+                <%= button_to destroy_user_session_path, method: :delete,
+                    class: "w-full flex items-center gap-2 px-4 py-3 text-sm cursor-pointer transition hover:opacity-70",
+                    style: "background: transparent; color: #991111; text-align: left;",
+                    data: { turbo: false } do %>
+                  🚪 Log out
+                <% end %>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
       </nav>
     <% end %>
 
     <main class="container mx-auto mt-28 px-5">
       <%= yield %>
     </main>
+
+    <script>
+      function toggleCustomGenre(select, inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (select.value === 'Other') {
+          input.style.display = 'block';
+          input.disabled = false;
+          input.focus();
+          select.disabled = true;
+        } else {
+          input.style.display = 'none';
+          input.disabled = true;
+          input.value = '';
+          select.disabled = false;
+        }
+      }
+    </script>
+
+    <script>
+      document.addEventListener('click', function(e) {
+        const menu = document.getElementById('user-menu');
+        const dropdown = document.getElementById('user-dropdown');
+        if (menu && dropdown && !menu.contains(e.target)) {
+          dropdown.classList.add('hidden');
+        }
+      });
+    </script>
   </body>
 </html>

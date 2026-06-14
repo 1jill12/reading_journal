@@ -1,1 +1,85 @@
 @import "tailwindcss";
+
+/* ============================================================
+   THEME SYSTEM — CSS Custom Properties
+   Applied via data-theme attribute on <html> tag
+   ============================================================ */
+
+/* Neutral (default)
+   Black #000000 · Granite #B7A7A9 · Brown #91766E
+   Beige #F6ECE3 · White #FFFFFF
+*/
+:root,
+[data-theme="neutral"] {
+  --theme-bg:             #F6ECE3;
+  --theme-bg-card:        rgba(255, 255, 255, 0.92);
+  --theme-nav-bg:         rgba(255, 255, 255, 0.96);
+  --theme-nav-shadow:     rgba(145, 118, 110, 0.12);
+  --theme-text-primary:   #000000;
+  --theme-text-secondary: #91766E;
+  --theme-text-muted:     #B7A7A9;
+  --theme-accent:         #91766E;
+  --theme-accent-hover:   #7A625A;
+  --theme-accent-text:    #FFFFFF;
+  --theme-border:         rgba(183, 167, 169, 0.3);
+  --theme-overlay-opacity: 0.10;
+  --theme-stat-finished:  #91766E;
+  --theme-stat-reading:   #B7A7A9;
+  --theme-stat-want:      #C8B8BA;
+  --theme-progress-bar:   #91766E;
+  --theme-star:           #91766E;
+  --theme-input-bg:       #FFFFFF;
+  --theme-input-border:   rgba(183, 167, 169, 0.4);
+}
+
+/* Dark Academia
+   Panda White SW 6147 #F0EAE0 · Balanced Beige SW 7037 #C9B99A
+   Rockbottom SW 7062 #4A4A48 · Nightwatch SW 9680 #2E3130
+   Tricorn Black SW 6258 #252422
+*/
+[data-theme="dark_academia"] {
+  --theme-bg:             #252422;
+  --theme-bg-card:        rgba(46, 49, 48, 0.92);
+  --theme-nav-bg:         rgba(28, 27, 25, 0.99);
+  --theme-nav-shadow:     rgba(201, 185, 154, 0.08);
+  --theme-text-primary:   #F0EAE0;
+  --theme-text-secondary: #C9B99A;
+  --theme-text-muted:     #7A7870;
+  --theme-accent:         #C9B99A;
+  --theme-accent-hover:   #B8A888;
+  --theme-accent-text:    #252422;
+  --theme-border:         rgba(201, 185, 154, 0.15);
+  --theme-overlay-opacity: 0.14;
+  --theme-stat-finished:  #C9B99A;
+  --theme-stat-reading:   #A09888;
+  --theme-stat-want:      #7A7870;
+  --theme-progress-bar:   #C9B99A;
+  --theme-star:           #C9B99A;
+  --theme-input-bg:       rgba(37, 36, 34, 0.9);
+  --theme-input-border:   rgba(201, 185, 154, 0.2);
+}
+
+/* ============================================================
+   SEMANTIC UTILITY CLASSES
+   ============================================================ */
+
+@layer utilities {
+  .theme-bg              { background-color: var(--theme-bg); }
+  .theme-bg-card         { background-color: var(--theme-bg-card); }
+  .theme-bg-nav          { background-color: var(--theme-nav-bg); }
+  .theme-text            { color: var(--theme-text-primary); }
+  .theme-text-secondary  { color: var(--theme-text-secondary); }
+  .theme-text-muted      { color: var(--theme-text-muted); }
+  .theme-accent-bg       { background-color: var(--theme-accent); }
+  .theme-accent-bg:hover { background-color: var(--theme-accent-hover); }
+  .theme-accent-text     { color: var(--theme-accent-text); }
+  .theme-accent-color    { color: var(--theme-accent); }
+  .theme-border          { border-color: var(--theme-border); }
+  .theme-star            { color: var(--theme-star); }
+  .theme-stat-finished   { color: var(--theme-stat-finished); }
+  .theme-stat-reading    { color: var(--theme-stat-reading); }
+  .theme-stat-want       { color: var(--theme-stat-want); }
+  .theme-progress-bar    { background-color: var(--theme-progress-bar); }
+  .theme-input-bg        { background-color: var(--theme-input-bg); }
+  .theme-input-border    { border-color: var(--theme-input-border); }
+}

@@ -1,0 +1,61 @@
+<div class="max-w-5xl mx-auto">
+  <div class="mb-8">
+    <%= link_to "← Challenges", challenges_path, class: "text-sm theme-text-muted hover:opacity-70 transition block mb-2" %>
+    <h1 class="text-4xl font-bold theme-text mb-2">Trope Bingo</h1>
+    <p class="theme-text-secondary">Join a card and watch it fill as you tag tropes on your books.</p>
+  </div>
+
+  <% if alert %>
+    <p class="rounded-lg px-4 py-3 mb-6 text-sm border theme-border theme-text"
+       style="background-color: var(--theme-bg-card);">
+      <%= alert %>
+    </p>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <% @bingo_cards.each do |card| %>
+      <% joined = @user_bingo_card_ids.include?(card.id) %>
+      <div class="theme-bg-card rounded-xl shadow-lg p-6 border theme-border">
+        <div class="flex justify-between items-start mb-3">
+          <h2 class="text-xl font-bold theme-text"><%= card.title %></h2>
+          <% if joined %>
+            <span class="text-xs font-semibold px-2 py-1 rounded-full"
+                  style="background-color: var(--theme-accent); color: var(--theme-accent-text);">
+              Active
+            </span>
+          <% end %>
+        </div>
+
+        <p class="theme-text-secondary text-sm mb-5"><%= card.description %></p>
+
+        <%# Mini 5x5 preview grid %>
+        <div class="grid grid-cols-5 gap-1 mb-5">
+          <% card.bingo_squares.order(:position).each do |square| %>
+            <div class="aspect-square rounded flex items-center justify-center text-center p-1"
+                 style="background-color: var(--theme-border); font-size: 0.45rem; line-height: 1.1; color: var(--theme-text-secondary);">
+              <%= square.free_space? ? '★' : square.trope_name %>
+            </div>
+          <% end %>
+        </div>
+
+        <div class="flex gap-3">
+          <% if joined %>
+            <%= link_to "View My Card", bingo_card_path(card),
+                class: "flex-1 text-center py-2 px-4 rounded-lg text-sm font-medium transition hover:opacity-80",
+                style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+            <% user_bingo_card = current_user.user_bingo_cards.find_by(bingo_card: card) %>
+            <%= button_to "Leave", user_bingo_card_path(user_bingo_card), method: :delete,
+                data: { turbo_confirm: "Leave this bingo card? Your progress will be lost." },
+                class: "py-2 px-4 rounded-lg text-sm font-medium border theme-border theme-text hover:opacity-70 transition",
+                style: "background: transparent;" %>
+          <% else %>
+            <%= button_to "Join Card", user_bingo_cards_path, method: :post,
+                params: { bingo_card_id: card.id },
+                class: "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition hover:opacity-80",
+                style: "background-color: var(--theme-accent); color: var(--theme-accent-text);" %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,78 @@
+<div class="max-w-5xl mx-auto">
+
+  <%# Header %>
+  <div class="flex items-center justify-between mb-8">
+    <div>
+      <%= link_to "← Challenges", challenges_path, class: "text-sm theme-text-muted hover:opacity-70 transition block mb-2" %>
+      <h1 class="text-4xl font-bold theme-text">A–Z Challenge</h1>
+      <p class="theme-text-muted mt-1 text-sm">Books are added automatically when marked as Finished.</p>
+    </div>
+
+    <%# Year picker %>
+    <div class="flex items-center gap-2">
+      <% ((Date.current.year - 1)..(Date.current.year + 1)).each do |y| %>
+        <%= link_to y, az_challenges_path(year: y),
+            class: "px-3 py-1.5 rounded-lg text-sm font-medium transition",
+            style: @year == y ?
+              "background-color: var(--theme-accent); color: var(--theme-accent-text);" :
+              "background-color: var(--theme-bg-card); color: var(--theme-text-muted); border: 1px solid var(--theme-border);" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Progress bar %>
+  <div class="theme-bg-card rounded-xl p-4 border theme-border mb-8 shadow">
+    <div class="flex justify-between text-xs theme-text-muted mb-2">
+      <span><%= @entries.count %> / 26 letters complete</span>
+      <span><%= ((@entries.count / 26.0) * 100).round %>%</span>
+    </div>
+    <div class="w-full rounded-full h-3" style="background-color: var(--theme-border);">
+      <div class="h-3 rounded-full transition-all duration-500"
+           style="width: <%= (@entries.count / 26.0) * 100 %>%; background-color: var(--theme-accent);"></div>
+    </div>
+  </div>
+
+  <%# A–Z Grid %>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+    <% ('A'..'Z').each do |letter| %>
+      <% entry = @entries[letter] %>
+      <div class="theme-bg-card rounded-xl border theme-border shadow overflow-hidden"
+           style="<%= entry ? '' : 'opacity: 0.55;' %>">
+
+        <%# Letter + remove %>
+        <div class="px-3 pt-3 pb-1 flex items-center justify-between">
+          <span class="text-lg font-black <%= entry ? 'theme-text' : 'theme-text-muted' %>"><%= letter %></span>
+          <% if entry %>
+            <%= button_to az_challenge_path(letter, year: @year), method: :delete,
+                class: "text-xs hover:opacity-60 transition cursor-pointer",
+                style: "background: none; border: none; color: var(--theme-text-muted);" do %>✕<% end %>
+          <% end %>
+        </div>
+
+        <div class="px-3 pb-3">
+          <% if entry %>
+            <% if entry.cover_url.present? %>
+              <%= image_tag entry.cover_url,
+                  class: "w-full rounded-lg shadow-sm",
+                  style: "aspect-ratio: 2/3; object-fit: cover;",
+                  alt: entry.display_title %>
+            <% else %>
+              <div class="w-full rounded-lg flex flex-col items-center justify-center gap-1 p-3 text-center"
+                   style="aspect-ratio: 2/3; background-color: var(--theme-border);">
+                <span class="text-2xl">📚</span>
+                <p class="text-xs theme-text-muted leading-tight"><%= entry.display_title %></p>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="w-full rounded-lg flex items-center justify-center"
+                 style="aspect-ratio: 2/3; background-color: var(--theme-border); border: 2px dashed var(--theme-border);">
+              <span class="theme-text-muted text-xs">No book yet</span>
+            </div>
+          <% end %>
+        </div>
+
+      </div>
+    <% end %>
+  </div>
+
+</div>
